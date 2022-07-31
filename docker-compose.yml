@@ -1,0 +1,38 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+version: '3.3'
+
+# Define services
+services:
+  # App backend service
+  app-server:
+    container_name: realworld
+    # Configuration for building the docker image for the backend service
+    build:
+      context: realworld-springboot-java # Use an image built from the specified dockerfile in the `polling-app-server` directory.
+      dockerfile: Dockerfile
+    image: realworld:latest
+    ports:
+      - "8080:8080" # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - realworld-network
+
+
+  # Frontend Service 
+  app-client:
+    build:
+      context: react-redux-realworld-example-app # Use an image built from the specified dockerfile in the `polling-app-client` directory.
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:4100
+    ports:
+      - "4100:4100" # Forward the exposed port 80 on the container to port 80 on the host machine
+    depends_on:
+      - app-server
+    networks:
+      - realworld-network  
+
+# Networks to be created to facilitate communication between containers
+networks:
+  realworld-network:
+    driver: bridge    
